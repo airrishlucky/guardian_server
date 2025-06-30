@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Notification History</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            margin: 0;
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            color: #fff;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 1.8rem;
+        }
+
+        .notification {
+            background: rgba(0, 0, 0, 0.6);
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .timestamp {
+            font-size: 0.9rem;
+            color: #ccc;
+        }
+
+        .message {
+            font-size: 1.05rem;
+            margin: 10px 0;
+            line-height: 1.4;
+        }
+
+        .values {
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        a {
+            color: #ffc107;
+            text-decoration: none;
+            font-weight: bold;
+            display: inline-block;
+            margin-top: 20px;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .back-link {
+            text-align: center;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 15px;
+            }
+
+            .notification {
+                padding: 12px;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .message {
+                font-size: 1rem;
+            }
+
+            .values {
+                font-size: 0.9rem;
+            }
+
+            .timestamp {
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>📋 Notification History</h1>
+
+    {% if notifications %}
+    {% for n in notifications %}
+    <div class="notification">
+        <div class="timestamp">🕒 {{ n.timestamp|date:"M d, Y h:i A" }}</div>
+        <div class="message">⚠️ {{ n.message }}</div>
+        <div class="values">
+            ❤️ Heart Rate: {{ n.heart_rate }} bpm<br>
+            🌡️ Temperature: {{ n.temperature }} °C<br>
+            🩺 BP: {{ n.bp_systolic }}/{{ n.bp_diastolic }} mmHg
+        </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <p style="text-align:center;">No alerts have been recorded yet.</p>
+    {% endif %}
+
+    <div class="back-link">
+        <a href="{% url 'dashboard' %}">← Back to Dashboard</a>
+    </div>
+
+</body>
+
+</html>

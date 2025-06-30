@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Live Location</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .map-container {
+            margin-top: 20px;
+            width: 100%;
+            max-width: 600px;
+            height: 400px;
+            margin-left: auto;
+            margin-right: auto;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .back-btn,
+        .reload-btn {
+            margin-top: 20px;
+            display: inline-block;
+            background-color: #6c757d;
+            padding: 10px 20px;
+            border-radius: 20px;
+            text-decoration: none;
+            color: white;
+            font-weight: bold;
+            transition: background-color 0.3s;
+            margin-right: 10px;
+        }
+
+        .back-btn:hover,
+        .reload-btn:hover {
+            background-color: #5a6268;
+        }
+
+        #location-info {
+            margin-top: 20px;
+            font-size: 0.95rem;
+            color: #e0e0e0;
+            white-space: pre-line;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h2>📍 Your Live Location</h2>
+
+    <div class="map-container">
+        <iframe id="map" src=""></iframe>
+    </div>
+
+    <div id="location-info">Fetching your GPS location...</div>
+
+    <div>
+        <a href="{% url 'dashboard' %}" class="back-btn">← Back to Dashboard</a>
+        <button class="reload-btn" onclick="loadMap()">🔄 Reload Map</button>
+    </div>
+
+    <script>
+        function loadMap() {
+            if ("geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition(
+                    function (position) {
+                        const lat = position.coords.latitude;
+                        const lon = position.coords.longitude;
+
+                        document.getElementById("map").src =
+                            `https://maps.google.com/maps?q=${lat},${lon}&hl=es;&output=embed`;
+
+                        document.getElementById("location-info").innerText =
+                            `Coordinates:\nLat: ${lat.toFixed(5)}, Lng: ${lon.toFixed(5)}`;
+                    },
+                    function (error) {
+                        let message = "⚠️ Unable to get your location.";
+                        if (error.code === 1) message = "⚠️ Location access denied. Please allow location permissions.";
+                        else if (error.code === 2) message = "⚠️ Location unavailable. Try again or check GPS.";
+                        else if (error.code === 3) message = "⚠️ Location request timed out. Try again.";
+                        document.getElementById("location-info").innerText = message;
+                    }
+                );
+            } else {
+                document.getElementById("location-info").innerText =
+                    "⚠️ Geolocation is not supported by your browser.";
+            }
+        }
+
+        window.onload = loadMap;
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Guardian Angel Dashboard</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, red, violet, orange, blue, white);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .alert {
+            display: none;
+            background-color: #dc3545;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 10px;
+            margin: 10px auto;
+            text-align: center;
+            max-width: 500px;
+            font-weight: bold;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        }
+
+        .container {
+            max-width: 500px;
+            margin: auto;
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 25px;
+            padding: 25px;
+            color: white;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .logoutB a {
+            float: right;
+            background-color: #dc3545;
+            color: white;
+            text-decoration: none;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-bottom: 15px;
+        }
+
+        .logoutB a:hover {
+            background-color: #c82333;
+        }
+
+        .history-btn {
+            background-color: #6f42c1;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 10px 5px 15px 0;
+            transition: background-color 0.3s ease;
+        }
+
+        .history-btn:hover {
+            opacity: 0.9;
+        }
+
+        .title {
+            text-align: center;
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .status {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: white;
+        }
+
+        .online {
+            background-color: #28a745;
+        }
+
+        .offline {
+            background-color: #dc3545;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 18px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+            transition: 0.3s ease-in-out;
+        }
+
+        .card:hover {
+            transform: scale(1.02);
+        }
+
+        .card h3 {
+            font-size: 1rem;
+            margin-bottom: 5px;
+            color: #f0f0f0;
+        }
+
+        .value {
+            font-size: 1.6rem;
+            font-weight: bold;
+        }
+
+        .value.normal {
+            color: #28a745;
+        }
+
+        .value.warning {
+            color: #e67e22;
+        }
+
+        .value.danger {
+            color: #dc3545;
+        }
+
+        .footer {
+            text-align: center;
+            font-size: 0.8rem;
+            color: #ccc;
+            margin-top: 15px;
+        }
+
+        @media (max-width: 500px) {
+            .container {
+                padding: 20px;
+            }
+
+            .title {
+                font-size: 1.4rem;
+            }
+
+            .value {
+                font-size: 1.3rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="alertBox" class="alert">⚠️ Warning: Abnormal vital signs detected!</div>
+
+    <div class="container" id="pdf-content">
+        <div class="logoutB">
+            <a href="{% url 'login' %}">Log Out</a>
+        </div>
+
+        <a href="{% url 'notification_history' %}">
+            <button class="history-btn">🔔 View Notifications</button>
+        </a>
+        <a href="{% url 'history' %}">
+            <button class="history-btn">📄 View History Report</button>
+        </a>
+
+        <div style="clear: both;"></div>
+
+        <div class="title">📟 Guardian Angel Live Dashboard</div>
+
+        <div class="status">
+            <span id="statusBadge" class="badge">Status: --</span>
+        </div>
+
+        <div class="card">
+            <h3>💓 Heart Rate</h3>
+            <div class="value" id="heartRate">-- BPM</div>
+        </div>
+
+        <div class="card">
+            <h3>🌡️ Temperature</h3>
+            <div class="value" id="temperature">-- °C</div>
+        </div>
+
+        <div class="card">
+            <h3>🩺 Blood Pressure</h3>
+            <div class="value" id="bloodPressure">-- / -- mmHg</div>
+        </div>
+
+        <!-- Location card as a clickable button -->
+        <a href="{% url 'location_page' %}" style="text-decoration: none;">
+            <div class="card">
+                <h3>📍 Location</h3>
+                <div class="value">Tap to View Live Map</div>
+            </div>
+        </a>
+
+        <div class="footer" id="timestamp">Last updated: --</div>
+    </div>
+
+    <script>
+        function classifyValue(value, type) {
+            if (type === "heart") {
+                if (value < 60 || value > 120) return "danger";
+                if (value > 100) return "warning";
+                return "normal";
+            }
+            if (type === "temp") {
+                if (value < 35 || value > 38) return "danger";
+                if (value > 37) return "warning";
+                return "normal";
+            }
+            return "";
+        }
+
+        function checkBloodPressure(systolic, diastolic) {
+            return systolic > 130 || systolic < 90 || diastolic > 90 || diastolic < 60;
+        }
+
+        async function fetchLatestData() {
+            try {
+                const res = await fetch("/api/latest/");
+                if (!res.ok) throw new Error("Failed to fetch");
+
+                const data = await res.json();
+
+                let alertTriggered = false;
+
+                const heartRateElem = document.getElementById("heartRate");
+                const heartClass = classifyValue(data.heart_rate, "heart");
+                heartRateElem.innerText = `${data.heart_rate} BPM`;
+                heartRateElem.className = `value ${heartClass}`;
+                if (heartClass === "danger") alertTriggered = true;
+
+                const temperatureElem = document.getElementById("temperature");
+                const tempClass = classifyValue(data.temperature, "temp");
+                temperatureElem.innerText = `${data.temperature} °C`;
+                temperatureElem.className = `value ${tempClass}`;
+                if (tempClass === "danger") alertTriggered = true;
+
+                document.getElementById("bloodPressure").innerText =
+                    `${data.bp_systolic} / ${data.bp_diastolic} mmHg`;
+
+                if (checkBloodPressure(data.bp_systolic, data.bp_diastolic)) {
+                    alertTriggered = true;
+                }
+
+                document.getElementById("timestamp").innerText =
+                    `Last updated: ${data.timestamp}`;
+
+                const statusBadge = document.getElementById("statusBadge");
+                if (data.is_online) {
+                    statusBadge.innerText = "🟢 Online";
+                    statusBadge.className = "badge online";
+                } else {
+                    statusBadge.innerText = "🔴 Offline";
+                    statusBadge.className = "badge offline";
+                }
+
+                document.getElementById("alertBox").style.display = alertTriggered ? "block" : "none";
+
+            } catch (err) {
+                console.error("Failed to load live data:", err);
+                const statusBadge = document.getElementById("statusBadge");
+                statusBadge.innerText = "🔴 Offline";
+                statusBadge.className = "badge offline";
+            }
+        }
+
+        setInterval(fetchLatestData, 3000);
+        fetchLatestData();
+    </script>
+</body>
+
+</html>
